@@ -394,5 +394,3 @@ class Cart(BaseModel):
     total_price: Decimal = Field(..., ge=0, description="Общая стоимость товаров")
 
     model_config = ConfigDict(from_attributes=True)
-
-
