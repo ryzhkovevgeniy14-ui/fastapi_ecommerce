@@ -57,7 +57,11 @@ async def get_all_products(
             None, description="true — только товары в наличии, false — только без остатка"),
         seller_id: int | None = Query(
             None, description="ID продавца для фильтрации"),
-        db: AsyncSession = Depends(get_async_db),
+        sort_date: str | None = Query(
+            None, description="Сортировка товаров по дате создания: "
+                                     "newest — сначала новые, oldest — сначала старые"
+        ),
+        db: AsyncSession = Depends(get_async_db)
 ):
     """
     Возвращает список всех активных товаров с поддержкой фильтров.
@@ -87,11 +91,17 @@ async def get_all_products(
     total_stmt = select(func.count()).select_from(ProductModel).where(*filters)
     total = await db.scalar(total_stmt) or 0
 
+    # Способ сортировки
+    order_by = {
+        "oldest": ProductModel.created_at.asc(),
+        "newest": ProductModel.created_at.desc(),
+    }.get(sort_date, ProductModel.id)
+
     # Выборка товаров с фильтрами и пагинацией
     products_stmt = (
         select(ProductModel)
         .where(*filters)
-        .order_by(ProductModel.id)
+        .order_by(order_by)
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
