@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.routers import categories, products, users, reviews, cart, orders
 
@@ -8,6 +9,9 @@ app = FastAPI(
     title="FastAPI Интернет-магазин",
     version="0.1.0",
 )
+
+# Монтирование подприложения для обслуживания статических файлов
+app.mount("/media", StaticFiles(directory="media"), name="media")
 
 # Подключаем маршруты категорий, товаров, пользователей и отзывов
 app.include_router(categories.router)
